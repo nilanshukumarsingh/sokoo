@@ -1,25 +1,34 @@
-const { Resend } = require('resend');
+const { Resend } = require("resend");
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const sendOrderEmail = async (options) => {
-    const { email, userName, orderId, products, totalAmount, shippingAddress, paymentMethod, type = 'confirmation' } = options;
+  const {
+    email,
+    userName,
+    orderId,
+    products,
+    totalAmount,
+    shippingAddress,
+    paymentMethod,
+    type = "confirmation",
+  } = options;
 
-    const isDelivered = type === 'delivered';
-    const subject = isDelivered 
-        ? `Order Delivered! #${orderId}` 
-        : `Order Confirmation #${orderId}`;
+  const isDelivered = type === "delivered";
+  const subject = isDelivered
+    ? `Order Delivered! #${orderId}`
+    : `Order Confirmation #${orderId}`;
 
-    const title = isDelivered ? 'Order Delivered' : 'Order Confirmed';
-    const message = isDelivered 
-        ? 'Your order has been successfully delivered. We hope you enjoy your purchase!'
-        : 'Thank you for your purchase. We\'re getting your order ready to be shipped.';
+  const title = isDelivered ? "Order Delivered" : "Order Confirmed";
+  const message = isDelivered
+    ? "Your order has been successfully delivered. We hope you enjoy your purchase!"
+    : "Thank you for your purchase. We're getting your order ready to be shipped.";
 
-    // Formatting currency
-    const formatPrice = (amount) => `$${Number(amount).toFixed(2)}`;
+  // Formatting currency
+  const formatPrice = (amount) => `$${Number(amount).toFixed(2)}`;
 
-    // Premium HTML Template
-    const htmlTemplate = `
+  // Premium HTML Template
+  const htmlTemplate = `
     <!DOCTYPE html>
     <html>
     <head>
@@ -62,16 +71,22 @@ const sendOrderEmail = async (options) => {
                     <div class="detail-box">
                         <strong>Shipping Address</strong>
                         <p>
-                            ${shippingAddress ? `${shippingAddress.street || ''}<br>
-                            ${shippingAddress.city || ''}, ${shippingAddress.state || ''} ${shippingAddress.zipCode || ''}<br>
-                            ${shippingAddress.country || ''}` : 'Address not provided'}
+                            ${
+                              shippingAddress
+                                ? `${shippingAddress.street || ""}<br>
+                            ${shippingAddress.city || ""}, ${
+                                    shippingAddress.state || ""
+                                  } ${shippingAddress.zipCode || ""}<br>
+                            ${shippingAddress.country || ""}`
+                                : "Address not provided"
+                            }
                         </p>
                     </div>
                     <div class="detail-box">
                         <strong>Payment Details</strong>
                         <p>
-                            Method: ${paymentMethod || 'Online'}<br>
-                            Status: ${isDelivered ? 'Paid' : 'Processed'}
+                            Method: ${paymentMethod || "Online"}<br>
+                            Status: ${isDelivered ? "Paid" : "Processed"}
                         </p>
                     </div>
                 </div>
@@ -86,13 +101,22 @@ const sendOrderEmail = async (options) => {
                         </tr>
                     </thead>
                     <tbody>
-                        ${products.map(item => `
+                        ${products
+                          .map(
+                            (item) => `
                             <tr>
-                                <td>${item.product ? item.product.name : 'Product'}</td>
+                                <td>${
+                                  item.product ? item.product.name : "Product"
+                                }</td>
                                 <td>${item.quantity}</td>
-                                <td style="text-align: right;">${formatPrice(item.quantity * (item.product ? item.product.price : 0))}</td>
+                                <td style="text-align: right;">${formatPrice(
+                                  item.quantity *
+                                    (item.product ? item.product.price : 0)
+                                )}</td>
                             </tr>
-                        `).join('')}
+                        `
+                          )
+                          .join("")}
                     </tbody>
                 </table>
 
@@ -101,11 +125,13 @@ const sendOrderEmail = async (options) => {
                 </div>
 
                 <div style="text-align: center;">
-                    <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/orders/${orderId}" class="btn">View Order Details</a>
+                    <a href="${
+                      process.env.CLIENT_URL || "http://localhost:5173"
+                    }/orders/${orderId}" class="btn">View Order Details</a>
                 </div>
             </div>
             <div class="footer">
-                <p>&copy; ${new Date().getFullYear()} VendorVerse. All rights reserved.</p>
+                <p>&copy; ${new Date().getFullYear()} Soko. All rights reserved.</p>
                 <p>If you have any questions, reply to this email.</p>
             </div>
         </div>
@@ -113,22 +139,22 @@ const sendOrderEmail = async (options) => {
     </html>
     `;
 
-    try {
-        const { data, error } = await resend.emails.send({
-            from: process.env.FROM_EMAIL || 'onboarding@resend.dev',
-            to: email, // In test mode, this must match the verified definition
-            subject: subject,
-            html: htmlTemplate
-        });
+  try {
+    const { data, error } = await resend.emails.send({
+      from: process.env.FROM_EMAIL || "onboarding@resend.dev",
+      to: email, // In test mode, this must match the verified definition
+      subject: subject,
+      html: htmlTemplate,
+    });
 
-        if (error) {
-            console.error('Resend Error:', error);
-        } else {
-            console.log(`Order Email (${type}) sent:`, data.id);
-        }
-    } catch (err) {
-        console.error('Resend Exception:', err);
+    if (error) {
+      console.error("Resend Error:", error);
+    } else {
+      console.log(`Order Email (${type}) sent:`, data.id);
     }
+  } catch (err) {
+    console.error("Resend Exception:", err);
+  }
 };
 
 module.exports = sendOrderEmail;

@@ -86,7 +86,7 @@
 ## 📁 Project Structure
 
 ```
-vendorverse/
+sokoo/
 ├── 📂 client/                 # Frontend React app
 │   ├── 📂 src/
 │   │   ├── 📂 components/     # Reusable UI components
@@ -120,8 +120,8 @@ vendorverse/
 ### 1️⃣ Clone the repository
 
 ```bash
-git clone https://github.com/jhaanurag/vendorverse.git
-cd vendorverse
+git clone https://github.com/nilanshukumarsingh/sokoo
+cd sokoo
 ```
 
 ### 2️⃣ Backend Setup
@@ -256,14 +256,14 @@ We love contributions! Here's how you can help:
 2. **Clone your fork**
 
    ```bash
-   git clone https://github.com/YOUR_USERNAME/vendorverse.git
-   cd vendorverse
+   git clone https://github.com/YOUR_USERNAME/sokoo.git
+   cd sokoo
    ```
 
 3. **Add upstream remote**
 
    ```bash
-   git remote add upstream https://github.com/jhaanurag/vendorverse.git
+   git remote add upstream https://github.com/jhaanurag/sokoo.git
    ```
 
 4. **Create a feature branch**
@@ -312,7 +312,7 @@ We love contributions! Here's how you can help:
 
 ### 🐛 Reporting Issues
 
-Found a bug? Please [open an issue](https://github.com/jhaanurag/vendorverse/issues/new) with:
+Found a bug? Please [open an issue](https://github.com/jhaanurag/sokoo/issues/new) with:
 
 - Clear description
 - Steps to reproduce
