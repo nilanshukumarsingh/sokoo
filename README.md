@@ -1,4 +1,4 @@
-# 🛒 VendorVerse - Multi-Vendor E-Commerce Platform
+# 🛒 Sokoo - Multi-Vendor E-Commerce Platform
 
 <div align="center">
 
