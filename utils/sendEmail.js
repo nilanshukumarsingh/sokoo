@@ -20,7 +20,7 @@ const sendEmail = async (options) => {
     console.log("Email sent successfully:", data.id);
   } catch (error) {
     console.error("Email send failed:", error);
-    // Don't crash the app, just log
+    throw error;
   }
 };
 

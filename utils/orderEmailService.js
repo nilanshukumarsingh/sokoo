@@ -141,7 +141,7 @@ const sendOrderEmail = async (options) => {
 
   try {
     const { data, error } = await resend.emails.send({
-      from: process.env.FROM_EMAIL || "onboarding@resend.dev",
+      from: process.env.FROM_EMAIL || "onboarding@sokoo.dev",
       to: email, // In test mode, this must match the verified definition
       subject: subject,
       html: htmlTemplate,
