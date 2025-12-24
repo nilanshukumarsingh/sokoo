@@ -12,7 +12,7 @@ const getBaseURL = () => {
   }
   // Use production URL in production, localhost in development
   return import.meta.env.PROD
-    ? "https://vendorverse-7pyv.vercel.app/api"
+    ? "https://sokoob.vercel.app/api"
     : "http://localhost:5000/api";
 };
 
@@ -43,7 +43,10 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     // Handle 401 Unauthorized, but NOT for login attempts (which are expected to fail)
-    if (error.response?.status === 401 && !error.config.url.includes('/auth/login')) {
+    if (
+      error.response?.status === 401 &&
+      !error.config.url.includes("/auth/login")
+    ) {
       localStorage.removeItem("user");
       localStorage.removeItem("token");
       window.location.href = "/login";
@@ -121,8 +124,10 @@ export const analyticsAPI = {
 
 // Stripe API
 export const stripeAPI = {
-  createCheckoutSession: (data) => api.post("/stripe/create-checkout-session", data),
-  verifyPayment: (sessionId) => api.post("/stripe/verify-payment", { sessionId }),
+  createCheckoutSession: (data) =>
+    api.post("/stripe/create-checkout-session", data),
+  verifyPayment: (sessionId) =>
+    api.post("/stripe/verify-payment", { sessionId }),
 };
 
 export default api;
