@@ -31,6 +31,19 @@ const VendorProductForm = () => {
     const [formError, setFormError] = useState(null);
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
+    const [isDirty, setIsDirty] = useState(false);
+
+    // Prompt before leaving if unsaved changes
+    useEffect(() => {
+        const handleBeforeUnload = (e) => {
+            if (isDirty) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        };
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, [isDirty]);
 
     useEffect(() => {
         if (!isAuthenticated || !isVendor) {
@@ -63,6 +76,8 @@ const VendorProductForm = () => {
             if (product.images?.[0]) {
                 setImagePreview(getImageUrl(product));
             }
+            // Reset dirty state after data load
+            setIsDirty(false);
         } catch (err) {
             showToast('Failed to load product', 'error');
             navigate('/vendor/products');
@@ -84,6 +99,7 @@ const VendorProductForm = () => {
             setImageFile(file);
             setImagePreview(URL.createObjectURL(file));
             setFormData(prev => ({ ...prev, imageUrl: '' }));
+            setIsDirty(true);
         }
     };
 
@@ -192,18 +208,29 @@ const VendorProductForm = () => {
                 <div style={{ maxWidth: '540px', margin: '0 auto' }}>
                     {/* Header */}
                     <div style={{ marginBottom: '1.8rem' }}>
-                        <Link to="/vendor/products" style={{
-                            color: 'var(--muted)',
-                            fontSize: '0.765rem',
-                            textDecoration: 'none',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '0.36rem',
-                            marginBottom: '0.9rem',
-                        }}>
+                        <button 
+                            onClick={() => {
+                                if (!isDirty || window.confirm('Discard unsaved changes?')) {
+                                    navigate('/vendor/products');
+                                }
+                            }}
+                            style={{
+                                background: 'transparent',
+                                border: 'none',
+                                color: 'var(--muted)',
+                                fontSize: '0.765rem',
+                                textDecoration: 'none',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.36rem',
+                                marginBottom: '0.9rem',
+                                cursor: 'pointer',
+                                padding: 0
+                            }}
+                        >
                             <ArrowLeft size={14} strokeWidth={2} />
                             Back to Products
-                        </Link>
+                        </button>
                         <h1 style={{
                             fontFamily: 'var(--font-display)',
                             fontSize: 'clamp(1.8rem, 3.6vw, 2.7rem)',
@@ -240,7 +267,10 @@ const VendorProductForm = () => {
                             <input
                                 type="text"
                                 value={formData.name}
-                                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                                onChange={(e) => {
+                                    setFormData(prev => ({ ...prev, name: e.target.value }));
+                                    setIsDirty(true);
+                                }}
                                 style={inputStyle}
                                 required
                                 placeholder="Product name"
@@ -253,7 +283,10 @@ const VendorProductForm = () => {
                             </label>
                             <textarea
                                 value={formData.description}
-                                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                                onChange={(e) => {
+                                    setFormData(prev => ({ ...prev, description: e.target.value }));
+                                    setIsDirty(true);
+                                }}
                                 style={{ ...inputStyle, minHeight: '90px', resize: 'vertical' }}
                                 placeholder="Product description"
                             />
@@ -269,7 +302,10 @@ const VendorProductForm = () => {
                                     step="0.01"
                                     min="0"
                                     value={formData.price}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                                    onChange={(e) => {
+                                        setFormData(prev => ({ ...prev, price: e.target.value }));
+                                        setIsDirty(true);
+                                    }}
                                     style={inputStyle}
                                     required
                                     placeholder="0.00"
@@ -283,7 +319,10 @@ const VendorProductForm = () => {
                                     type="number"
                                     min="0"
                                     value={formData.stock}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, stock: e.target.value }))}
+                                    onChange={(e) => {
+                                        setFormData(prev => ({ ...prev, stock: e.target.value }));
+                                        setIsDirty(true);
+                                    }}
                                     style={inputStyle}
                                     required
                                     placeholder="0"
@@ -297,7 +336,10 @@ const VendorProductForm = () => {
                             </label>
                             <select
                                 value={formData.category}
-                                onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                                onChange={(e) => {
+                                    setFormData(prev => ({ ...prev, category: e.target.value }));
+                                    setIsDirty(true);
+                                }}
                                 style={selectStyle}
                             >
                                 <option value="" style={{ background: '#1a1a1a', color: '#fff' }}>Select category</option>
@@ -348,6 +390,7 @@ const VendorProductForm = () => {
                                     accept="image/jpeg,image/jpg,image/png,image/webp"
                                     onChange={handleFileChange}
                                     style={{ display: 'none' }}
+                                    onClick={(e) => e.target.value = null} // Allow selecting same file again
                                 />
                             </label>
                             <p style={{ fontSize: '0.675rem', color: '#666', marginBottom: '0.9rem', marginTop: '0.45rem', textAlign: 'center' }}>
@@ -371,10 +414,19 @@ const VendorProductForm = () => {
                                         setImageFile(null);
                                         setImagePreview(e.target.value);
                                     }
+                                    setIsDirty(true);
                                 }}
                                 style={inputStyle}
                                 placeholder="https://example.com/image.jpg"
                                 disabled={!!imageFile}
+                                onClick={(e) => {
+                                    // If switching to URL and file exists, confirm
+                                    if (imageFile) {
+                                       if(!window.confirm('Switching to URL will remove the uploaded file. Continue?')) {
+                                           e.preventDefault();
+                                       }
+                                    }
+                                }}
                             />
                             <p style={{ fontSize: '0.675rem', color: '#666', marginTop: '0.45rem' }}>
                                 Or paste a direct image URL
@@ -384,7 +436,11 @@ const VendorProductForm = () => {
                         <div style={{ display: 'flex', gap: '0.9rem' }}>
                             <button
                                 type="button"
-                                onClick={() => navigate('/vendor/products')}
+                                onClick={() => {
+                                    if (!isDirty || window.confirm('Discard unsaved changes?')) {
+                                        navigate('/vendor/products');
+                                    }
+                                }}
                                 style={{
                                     flex: 1,
                                     padding: '0.81rem',

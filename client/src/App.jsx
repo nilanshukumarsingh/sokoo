@@ -32,6 +32,7 @@ import ProductsPage from "./pages/ProductsPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
+import PaymentSuccessPage from "./pages/PaymentSuccess";
 import OrdersPage from "./pages/OrdersPage";
 import OrderDetailPage from "./pages/OrderDetailPage";
 import VendorDashboard from "./pages/VendorDashboard";
@@ -39,7 +40,11 @@ import VendorProducts from "./pages/VendorProducts";
 import VendorOrders from "./pages/VendorOrders";
 import VendorProductForm from "./pages/VendorProductForm";
 import ShopPage from "./pages/ShopPage";
-import ProfileSettings from "./pages/Settings/ProfileSettings"; // New import
+import ProfileSettings from "./pages/Settings/ProfileSettings";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
+import NotFoundPage from "./pages/NotFoundPage";
+import WishlistPage from "./pages/WishlistPage";
 
 // Styles
 import "./App.css";
@@ -99,7 +104,7 @@ const AppContent = ({ isPreloaderFinished }) => {
   useEffect(() => {
     window.scrollTo(0, 0);
     ScrollTrigger.refresh();
-  }, [location.pathname]);
+  }, [location.pathname, location.search]);
 
   // Page enter animation
   useLayoutEffect(() => {
@@ -141,10 +146,21 @@ const AppContent = ({ isPreloaderFinished }) => {
             element={<LandingPage isPreloaderFinished={isPreloaderFinished} />}
           />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/resetpassword/:resetToken" element={<ResetPasswordPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/products/:id" element={<ProductDetailPage />} />
           <Route path="/shops/:id" element={<ShopPage />} />
+
+          <Route
+            path="/wishlist"
+            element={
+              <ProtectedRoute>
+                <WishlistPage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Protected Routes (Any authenticated user) */}
           <Route
@@ -160,6 +176,14 @@ const AppContent = ({ isPreloaderFinished }) => {
             element={
               <ProtectedRoute>
                 <CheckoutPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payment-success"
+            element={
+              <ProtectedRoute>
+                <PaymentSuccessPage />
               </ProtectedRoute>
             }
           />
@@ -231,7 +255,7 @@ const AppContent = ({ isPreloaderFinished }) => {
           />
 
           {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
       <BottomBlur />

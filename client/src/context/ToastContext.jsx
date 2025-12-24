@@ -33,12 +33,12 @@ export const ToastProvider = ({ children }) => {
             {children}
             {/* Render toasts */}
             {toasts.length > 0 && (
-                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999, pointerEvents: 'none' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', paddingTop: '90px', pointerEvents: 'none' }}>
+                <div style={{ position: 'fixed', bottom: '2rem', right: '2rem', zIndex: 9999, pointerEvents: 'none' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem', pointerEvents: 'none' }}>
                         {toasts.map((toast, index) => (
                             <div key={toast.id} style={{
-                                transform: `translateY(${index * 10}px)`,
-                                pointerEvents: 'auto'
+                                pointerEvents: 'auto',
+                                transition: 'all 0.3s ease-out'
                             }}>
                                 <Toast
                                     message={toast.message}

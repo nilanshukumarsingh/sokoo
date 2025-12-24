@@ -56,6 +56,7 @@ exports.createOrder = asyncHandler(async (req, res, next) => {
                 vendor: product.shop.owner,
                 shop: product.shop._id,
                 items: [],
+                totalAmount: 0
             });
         }
 
@@ -76,7 +77,9 @@ exports.createOrder = asyncHandler(async (req, res, next) => {
         user: req.user._id,
         products: orderItems,
         totalAmount,
-        shippingAddress
+        shippingAddress,
+        paymentMethod: req.body.paymentMethod || 'Cash on Delivery',
+        isPaid: false
     });
 
     // 2. Create Sub-Orders for each vendor
@@ -99,6 +102,9 @@ exports.createOrder = asyncHandler(async (req, res, next) => {
             userName: req.user.name,
             orderId: order._id,
             totalAmount: totalAmount,
+            title: 'Order', // Adding a title field if needed or just using rest
+            shippingAddress: shippingAddress,
+            paymentMethod: req.body.paymentMethod || 'Cash on Delivery',
             products: Array.from(vendorMap.values()).flatMap(v => v.items).map(item => ({
                 product: { name: item.name, price: item.price },
                 quantity: item.quantity
@@ -207,6 +213,29 @@ exports.updateOrderStatus = asyncHandler(async (req, res, next) => {
     }
 
     await parentOrder.save();
+
+    // NEW: Send "Delivered" Email if status is delivered
+    if (status === 'delivered') {
+        try {
+            // Re-fetch parent with populated fields to ensure we have data for email
+            const fullOrder = await Order.findById(subOrder.parentOrder).populate('user').populate('products.product');
+            await sendOrderEmail({
+                email: fullOrder.user.email,
+                userName: fullOrder.user.name,
+                orderId: fullOrder._id,
+                totalAmount: fullOrder.totalAmount,
+                shippingAddress: fullOrder.shippingAddress,
+                paymentMethod: fullOrder.paymentMethod,
+                type: 'delivered', // Triggers Delivered Template
+                products: fullOrder.products.map(item => ({
+                     product: { name: item.product?.name || 'Product', price: item.product?.price || 0 },
+                     quantity: item.quantity
+                }))
+            });
+        } catch (emailErr) {
+            console.error('Failed to send delivered email:', emailErr);
+        }
+    }
 
     res.status(200).json({ success: true, data: subOrder });
 });

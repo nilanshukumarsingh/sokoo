@@ -1,4 +1,4 @@
-/**
+ /**
  * Toast Notification Component
  * Animated toast notifications that appear at top-center of screen
  */
@@ -13,10 +13,10 @@ const Toast = ({ message, type = 'success', onClose }) => {
     useEffect(() => {
         if (!toastRef.current) return;
 
-        // Animate in
+        // Animate in from bottom (since it's positioned at bottom-right)
         gsap.fromTo(toastRef.current,
-            { y: -50, opacity: 0, scale: 0.9 },
-            { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.7)" }
+            { y: 20, opacity: 0, scale: 0.95 },
+            { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: "power3.out" }
         );
 
         // Auto dismiss after 3 seconds
@@ -31,63 +31,88 @@ const Toast = ({ message, type = 'success', onClose }) => {
         if (!toastRef.current) return;
 
         gsap.to(toastRef.current, {
-            y: -20,
+            y: 20,
             opacity: 0,
-            scale: 0.9,
+            scale: 0.95,
             duration: 0.3,
             ease: "power2.in",
             onComplete: onClose
         });
     };
 
-    const bgColor = type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : '#10b981';
+    const getColor = () => {
+        switch (type) {
+            case 'error': return '#ef4444';
+            case 'warning': return '#f59e0b';
+            default: return '#10b981';
+        }
+    };
+
+    const color = getColor();
 
     return (
         <div
             ref={toastRef}
             style={{
-                position: 'fixed',
-                top: '100px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                zIndex: 9999,
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.75rem',
-                padding: '0.9rem 1.35rem',
-                background: bgColor,
-                color: '#fff',
-                fontWeight: 600,
-                fontSize: '0.81rem',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
-                maxWidth: '90vw',
-                minWidth: '400px',
+                gap: '12px',
+                padding: '12px 16px',
+                background: '#ffffff',
+                color: '#1a1a1a',
+                fontWeight: 500,
+                fontSize: '0.875rem',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                minWidth: 'auto',
+                maxWidth: '320px',
+                borderRadius: '8px',
+                border: '1px solid #f0f0f0',
+                position: 'relative',
+                overflow: 'hidden'
             }}
         >
-            {type === 'error' ? (
-                <AlertTriangle size={16} strokeWidth={2.5} />
-            ) : type === 'warning' ? (
-                <AlertTriangle size={16} strokeWidth={2.5} />
-            ) : (
-                <Check size={16} strokeWidth={2.5} />
-            )}
-            <span>{message}</span>
+            {/* Accent colored line at the bottom instead of thick left border */}
+            <div style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                bottom: 0,
+                width: '4px',
+                background: color,
+                borderTopLeftRadius: '8px',
+                borderBottomLeftRadius: '8px'
+            }} />
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: color }}>
+                {type === 'error' ? (
+                    <AlertTriangle size={18} strokeWidth={2.5} />
+                ) : type === 'warning' ? (
+                    <AlertTriangle size={18} strokeWidth={2.5} />
+                ) : (
+                    <Check size={18} strokeWidth={2.5} />
+                )}
+            </div>
+            
+            <span style={{ flex: 1, lineHeight: 1.4 }}>{message}</span>
+            
             <button
                 onClick={handleClose}
                 style={{
                     background: 'transparent',
                     border: 'none',
-                    color: '#fff',
+                    color: '#999',
                     cursor: 'pointer',
-                    padding: '0.18rem',
-                    marginLeft: '0.45rem',
+                    padding: '4px',
+                    marginLeft: '8px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    opacity: 0.8,
+                    transition: 'color 0.2s'
                 }}
+                onMouseEnter={(e) => e.currentTarget.style.color = '#333'}
+                onMouseLeave={(e) => e.currentTarget.style.color = '#999'}
             >
-                <X size={14} strokeWidth={2.5} />
+                <X size={16} strokeWidth={2} />
             </button>
         </div>
     );

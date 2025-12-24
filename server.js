@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require('express'); // Server entry point - schema updated
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -47,6 +47,7 @@ app.use('/api/products', require('./routes/productRoutes'));
 app.use('/api/orders', require('./routes/orderRoutes'));
 app.use('/api/cart', require('./routes/cartRoutes'));
 app.use('/api/analytics', require('./routes/analyticsRoutes'));
+app.use('/api/stripe', require('./routes/stripeRoutes'));
 
 // Error Handler
 app.use(errorHandler);

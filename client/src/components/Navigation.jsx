@@ -16,7 +16,8 @@ import ScrambleChar from "./ScrambleChar";
 import { gsap } from "gsap";
 import { useScrollDirection } from "../context/LenisContext";
 import { useAuth } from "../context/AuthContext";
-import UserDropdown from "./UserMenu/UserDropdown"; // Re-added import
+import { cartAPI } from "../utils/api"; // Added cartAPI
+import UserDropdown from "./UserMenu/UserDropdown";
 
 // Check for reduced motion preference
 const prefersReducedMotion = () => {
@@ -35,8 +36,31 @@ const Navigation = ({ isPreloaderFinished }) => {
   const { direction, isScrolled } = useScrollDirection();
   const location = useLocation();
   const prevLocation = useRef(location.pathname);
-
   const { user, isAuthenticated, isVendor, logout } = useAuth();
+  const [cartCount, setCartCount] = useState(0);
+
+  // Fetch Cart Count
+  const fetchCartCount = useCallback(async () => {
+    if (!isAuthenticated || isVendor) return;
+    try {
+      const res = await cartAPI.get();
+      const count = res.data?.data?.items?.reduce((acc, item) => acc + item.quantity, 0) || 0;
+      setCartCount(count);
+    } catch (err) {
+      console.error("Failed to fetch cart count", err);
+    }
+  }, [isAuthenticated, isVendor]);
+
+  // Listen for cart updates
+  useEffect(() => {
+    fetchCartCount();
+    
+    // Listen for custom event from ProductDetailPage or other places
+    const handleCartUpdate = () => fetchCartCount();
+    window.addEventListener('cart-updated', handleCartUpdate);
+    
+    return () => window.removeEventListener('cart-updated', handleCartUpdate);
+  }, [fetchCartCount]);
 
   // Initial navigation animation on mount
   useLayoutEffect(() => {
@@ -185,7 +209,8 @@ const Navigation = ({ isPreloaderFinished }) => {
     ];
 
     if (isAuthenticated) {
-      links.push({ to: "/cart", label: "Cart" });
+      const cartLabel = cartCount > 0 ? `Cart (${cartCount})` : "Cart";
+      links.push({ to: "/cart", label: cartLabel });
 
       if (isVendor) {
         links.push({ to: "/vendor/dashboard", label: "Dashboard" });

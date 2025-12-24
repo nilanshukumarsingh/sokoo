@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, Link } from 'react-router-dom';
-import { cartAPI, ordersAPI } from '../utils/api';
+import { cartAPI, ordersAPI, stripeAPI } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import Footer from '../components/Footer';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -67,10 +67,28 @@ const CheckoutPage = () => {
         setShippingAddress(prev => ({ ...prev, [name]: value }));
     };
 
+    const handleStripePayment = async () => {
+        setSubmitting(true);
+        setError(null);
+        try {
+            const { data } = await stripeAPI.createCheckoutSession({ shippingAddress });
+            if (data.url) {
+                window.location.href = data.url;
+            } else {
+                setError('Failed to create payment session');
+                setSubmitting(false);
+            }
+        } catch (err) {
+            console.error(err);
+            setError(err.response?.data?.error || 'Payment initialization failed');
+            setSubmitting(false);
+        }
+    };
+
     const handlePlaceOrderClick = (e) => {
         e.preventDefault();
         setError(null);
-
+        
         // Validate Address
         const required = ['street', 'city', 'state', 'zipCode', 'country'];
         for (const field of required) {
@@ -87,8 +105,8 @@ const CheckoutPage = () => {
         }
 
         if (paymentMethod === 'card') {
-             setNotification('Credit/Debit Card payments are coming soon!');
-             setTimeout(() => setNotification(null), 3000);
+             // Handle Stripe Payment
+             handleStripePayment();
              return;
         }
         
@@ -404,13 +422,8 @@ const CheckoutPage = () => {
                                         </div>
                                     </div>
 
-                                    {/* Card Option */}
                                     <div 
-                                        onClick={() => {
-                                            setPaymentMethod('card');
-                                            setNotification('Credit/Debit Card payments are coming soon!');
-                                            setTimeout(() => setNotification(null), 3000);
-                                        }}
+                                        onClick={() => setPaymentMethod('card')}
                                         style={{
                                             border: `1px solid ${paymentMethod === 'card' ? 'var(--fg)' : 'var(--border)'}`,
                                             padding: '1.5rem',
@@ -420,12 +433,12 @@ const CheckoutPage = () => {
                                             display: 'flex',
                                             alignItems: 'center',
                                             gap: '1rem',
-                                            opacity: 0.7 // Visual hint it might be restricted
                                         }}
                                     >
                                         <div style={{
                                             width: '20px', height: '20px', borderRadius: '50%',
-                                            border: '2px solid var(--border)', // Muted selection circle
+                                            border: '2px solid var(--border)',
+                                            borderColor: paymentMethod === 'card' ? 'var(--fg)' : 'var(--border)',
                                             display: 'flex', alignItems: 'center', justifyContent: 'center'
                                         }}>
                                             {paymentMethod === 'card' && <div style={{ width: '10px', height: '10px', background: 'var(--fg)', borderRadius: '50%' }} />}
@@ -435,7 +448,7 @@ const CheckoutPage = () => {
                                                 <CreditCard size={20} />
                                                 <span style={{ fontWeight: 600 }}>Credit / Debit Card</span>
                                             </div>
-                                            <p style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Secure online encryption</p>
+                                            <p style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Pay securely via Stripe</p>
                                         </div>
                                     </div>
                                 </div>

@@ -3,12 +3,18 @@
  * Main vendor page with stats overview and quick links
  */
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { analyticsAPI, productsAPI, ordersAPI } from '../utils/api';
 import { DollarSign, Package, Tag, Clock, ArrowRight } from 'lucide-react';
 import Footer from '../components/Footer';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+import RevenueChart from '../components/RevenueChart';
+
+// Register GSAP plugin
+gsap.registerPlugin(useGSAP);
 
 const VendorDashboard = () => {
     const { user, isVendor, isAuthenticated } = useAuth();
@@ -18,6 +24,9 @@ const VendorDashboard = () => {
     const [recentOrders, setRecentOrders] = useState([]);
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Container ref for GSAP scope
+    const dashboardRef = useRef(null);
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -49,6 +58,101 @@ const VendorDashboard = () => {
         }
     };
 
+    // GSAP Animations
+    useGSAP(() => {
+        // Skip animations if loading or if user prefers reduced motion
+        if (loading) return;
+
+        const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (isReduced) return;
+
+        // Animate metric cards entry - REMOVED TO FIX VISIBILITY
+        // gsap.from('.metric-card', {
+        //     y: 20,
+        //     opacity: 0,
+        //     duration: 0.6,
+        //     stagger: 0.15,
+        //     ease: 'power2.out',
+        // });
+        
+        // Ensure they are visible
+        gsap.set('.metric-card', { opacity: 1, y: 0 });
+
+        // Animate counters
+        const counters = document.querySelectorAll('.metric-value');
+        counters.forEach(counter => {
+            const rawValue = counter.getAttribute('data-value');
+            if (!rawValue) return;
+            
+            // Clean value to get number
+            const isCurrency = rawValue.includes('$');
+            const endValue = parseFloat(rawValue.replace(/[^0-9.-]+/g, ''));
+            
+            if (isNaN(endValue)) return;
+
+            const proxy = { val: 0 };
+            
+            gsap.to(proxy, {
+                val: endValue,
+                duration: 1,
+                ease: 'power2.out',
+                onUpdate: () => {
+                    const formatted = isCurrency 
+                        ? `$${proxy.val.toFixed(2)}` 
+                        : Math.floor(proxy.val).toString();
+                    counter.innerText = formatted;
+                }
+            });
+        });
+
+    }, { scope: dashboardRef, dependencies: [loading, stats] });
+
+    // Hover effects using contextSafe
+    const { contextSafe } = useGSAP({ scope: dashboardRef });
+
+    const handleMouseEnter = contextSafe((e) => {
+        const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (isReduced) return;
+        
+        gsap.to(e.currentTarget, {
+            scale: 1.02,
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+            duration: 0.3,
+            ease: 'power2.out'
+        });
+    });
+
+    const handleMouseLeave = contextSafe((e) => {
+        const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (isReduced) return;
+
+        gsap.to(e.currentTarget, {
+            scale: 1,
+            boxShadow: 'none', 
+            clearProps: 'boxShadow',
+            duration: 0.3,
+            ease: 'power2.out'
+        });
+    });
+
+    const displayStats = {
+        totalRevenue: stats?.totalRevenue || 0,
+        totalItemsSold: stats?.totalItemsSold || 0,
+        productsCount: products.length,
+        pendingOrders: recentOrders.filter(o => o.status === 'pending' || o.status === 'processing').length
+    };
+
+    const statCards = [
+        { label: 'Total Revenue', value: `$${displayStats.totalRevenue.toFixed(2)}`, raw: displayStats.totalRevenue, isCurrency: true, icon: <DollarSign size={24} /> },
+        { label: 'Items Sold', value: displayStats.totalItemsSold, raw: displayStats.totalItemsSold, isCurrency: false, icon: <Package size={24} /> },
+        { label: 'Products', value: displayStats.productsCount, raw: displayStats.productsCount, isCurrency: false, icon: <Tag size={24} /> },
+        { label: 'Pending Orders', value: displayStats.pendingOrders, raw: displayStats.pendingOrders, isCurrency: false, icon: <Clock size={24} /> },
+    ];
+
+    const revenueData = React.useMemo(() => {
+        return stats?.salesHistory || [];
+    }, [stats]);
+
     if (loading) {
         return (
             <div style={{
@@ -71,13 +175,6 @@ const VendorDashboard = () => {
         );
     }
 
-    const statCards = [
-        { label: 'Total Revenue', value: `$${(stats?.totalRevenue || 0).toFixed(2)}`, icon: <DollarSign size={24} /> },
-        { label: 'Items Sold', value: stats?.totalItemsSold || 0, icon: <Package size={24} /> },
-        { label: 'Products', value: products.length, icon: <Tag size={24} /> },
-        { label: 'Pending Orders', value: recentOrders.filter(o => o.status === 'pending' || o.status === 'processing').length, icon: <Clock size={24} /> },
-    ];
-
     return (
         <div style={{
             minHeight: '100vh',
@@ -85,7 +182,7 @@ const VendorDashboard = () => {
             display: 'flex',
             flexDirection: 'column',
         }}>
-            <div style={{
+            <div ref={dashboardRef} style={{
                 flex: 1,
                 padding: 'var(--space-lg)',
                 paddingTop: '0',
@@ -119,18 +216,16 @@ const VendorDashboard = () => {
                         display: 'grid',
                         gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
                         gap: '1.5rem',
-                        marginBottom: '4rem',
+                        marginBottom: '2rem',
                     }}>
                         {statCards.map((stat, i) => (
                             <div
                                 key={i}
+                                className="metric-card"
                                 style={{
                                     padding: '2rem',
                                     background: 'var(--bg-alt)',
-                                    transition: 'transform 0.3s',
                                 }}
-                                onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
-                                onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                             >
                                 <span style={{ fontSize: '1.5rem', marginBottom: '1rem', display: 'block' }}>{stat.icon}</span>
                                 <p style={{
@@ -139,7 +234,12 @@ const VendorDashboard = () => {
                                     fontFamily: 'var(--font-display)',
                                     marginBottom: '0.5rem',
                                 }}>
-                                    {stat.value}
+                                    <span 
+                                        className="metric-value" 
+                                        data-value={stat.isCurrency ? `$${stat.raw.toFixed(2)}` : stat.raw}
+                                    >
+                                        {stat.isCurrency ? '$0.00' : '0'}
+                                    </span>
                                 </p>
                                 <p style={{
                                     fontSize: '0.85rem',
@@ -152,6 +252,9 @@ const VendorDashboard = () => {
                             </div>
                         ))}
                     </div>
+
+                    {/* Revenue Chart */}
+                    <RevenueChart dataPoints={revenueData} />
 
                     {/* Quick Links */}
                     <div style={{
@@ -170,10 +273,10 @@ const VendorDashboard = () => {
                                 display: 'flex',
                                 justifyContent: 'space-between',
                                 alignItems: 'center',
-                                transition: 'transform 0.3s',
+                                transition: 'none',
                             }}
-                            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
-                            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                            onMouseEnter={handleMouseEnter}
+                            onMouseLeave={handleMouseLeave}
                         >
                             <div>
                                 <h3 style={{
@@ -203,10 +306,10 @@ const VendorDashboard = () => {
                                 display: 'flex',
                                 justifyContent: 'space-between',
                                 alignItems: 'center',
-                                transition: 'transform 0.3s',
+                                transition: 'none',
                             }}
-                            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
-                            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                            onMouseEnter={handleMouseEnter}
+                            onMouseLeave={handleMouseLeave}
                         >
                             <div>
                                 <h3 style={{
@@ -308,4 +411,3 @@ const VendorDashboard = () => {
 };
 
 export default VendorDashboard;
-

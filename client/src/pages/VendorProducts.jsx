@@ -1,24 +1,24 @@
-/**
- * Vendor Products Page
- * Product management for vendors - list, edit, delete (form moved to separate page)
- */
-
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { productsAPI } from '../utils/api';
-import { Plus, Edit2, Trash2 } from 'lucide-react';
+import { productsAPI, shopsAPI } from '../utils/api';
+import { Plus, Edit2, Trash2, Store } from 'lucide-react';
 import Footer from '../components/Footer';
 
 const VendorProducts = () => {
-    const { isVendor, isAuthenticated } = useAuth();
+    const { isVendor, isAuthenticated, user } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
 
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [deleting, setDeleting] = useState(null);
+    const [shopMissing, setShopMissing] = useState(false);
+    
+    // Shop Creation State
+    const [shopData, setShopData] = useState({ name: '', description: '' });
+    const [creatingShop, setCreatingShop] = useState(false);
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -33,14 +33,38 @@ const VendorProducts = () => {
     }, [isAuthenticated, isVendor]);
 
     const fetchProducts = async () => {
+        setLoading(true);
         try {
             const response = await productsAPI.getVendorProducts();
             setProducts(response.data.data || []);
+            setShopMissing(false);
         } catch (err) {
-            console.error('Failed to fetch products:', err);
-            showToast('Failed to load products', 'error');
+            // If 404, it means the vendor has no shop created yet
+            if (err.response && err.response.status === 404) {
+                setShopMissing(true);
+            } else {
+                console.error('Failed to fetch products:', err);
+                showToast('Failed to load products', 'error');
+            }
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleCreateShop = async (e) => {
+        e.preventDefault();
+        setCreatingShop(true);
+        try {
+            await shopsAPI.create(shopData);
+            showToast('Shop created successfully!', 'success');
+            setShopMissing(false);
+            // After shop creation, user has 0 products, so valid empty list
+            setProducts([]); 
+        } catch (err) {
+            console.error('Failed to create shop:', err);
+            showToast(err.response?.data?.error || 'Failed to create shop', 'error');
+        } finally {
+            setCreatingShop(false);
         }
     };
 
@@ -85,6 +109,69 @@ const VendorProducts = () => {
                     animation: 'spin 1s linear infinite',
                 }} />
                 <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            </div>
+        );
+    }
+
+    // --- RENDER: SHOP CREATION FORM ---
+    if (shopMissing) {
+        return (
+            <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ flex: 1, padding: 'var(--space-lg)', paddingTop: '0', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <div style={{ maxWidth: '500px', width: '100%', padding: '3rem', background: 'var(--bg-alt)', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+                        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                            <div style={{ width: '60px', height: '60px', background: 'var(--fg)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', color: 'var(--bg)' }}>
+                                <Store size={32} />
+                            </div>
+                            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', marginBottom: '0.5rem' }}>Setup Your Shop</h1>
+                            <p style={{ color: 'var(--muted)' }}>You need to create a shop before adding products.</p>
+                        </div>
+
+                        <form onSubmit={handleCreateShop}>
+                            <div style={{ marginBottom: '1.5rem' }}>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.9rem' }}>Shop Name</label>
+                                <input 
+                                    type="text" 
+                                    required
+                                    value={shopData.name}
+                                    onChange={(e) => setShopData({...shopData, name: e.target.value})}
+                                    placeholder="e.g. My Awesome Store"
+                                    style={{ width: '100%', padding: '0.9rem', background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--fg)', borderRadius: '6px' }}
+                                />
+                            </div>
+                            <div style={{ marginBottom: '2rem' }}>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.9rem' }}>Description</label>
+                                <textarea 
+                                    rows="3"
+                                    value={shopData.description}
+                                    onChange={(e) => setShopData({...shopData, description: e.target.value})}
+                                    placeholder="Tell us about your shop..."
+                                    style={{ width: '100%', padding: '0.9rem', background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--fg)', borderRadius: '6px', resize: 'vertical' }}
+                                />
+                            </div>
+                            <button 
+                                type="submit" 
+                                disabled={creatingShop}
+                                style={{
+                                    width: '100%',
+                                    padding: '1rem',
+                                    background: 'var(--fg)',
+                                    color: 'var(--bg)',
+                                    border: 'none',
+                                    fontWeight: 700,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.1em',
+                                    borderRadius: '6px',
+                                    cursor: creatingShop ? 'not-allowed' : 'pointer',
+                                    opacity: creatingShop ? 0.7 : 1
+                                }}
+                            >
+                                {creatingShop ? 'Creating Shop...' : 'Create Shop'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <Footer />
             </div>
         );
     }

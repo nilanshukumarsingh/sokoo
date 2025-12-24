@@ -42,8 +42,8 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Handle 401 Unauthorized
-    if (error.response?.status === 401) {
+    // Handle 401 Unauthorized, but NOT for login attempts (which are expected to fail)
+    if (error.response?.status === 401 && !error.config.url.includes('/auth/login')) {
       localStorage.removeItem("user");
       localStorage.removeItem("token");
       window.location.href = "/login";
@@ -59,6 +59,9 @@ export const authAPI = {
   getProfile: () => api.get("/auth/profile"),
   updateDetails: (userData) => api.put("/auth/updatedetails", userData),
   toggleWishlist: (productId) => api.post(`/auth/wishlist/${productId}`),
+  forgotPassword: (email) => api.post("/auth/forgotpassword", { email }),
+  resetPassword: (resetToken, password) =>
+    api.put(`/auth/resetpassword/${resetToken}`, { password }),
 };
 
 // Products API
@@ -86,6 +89,7 @@ export const cartAPI = {
   get: () => api.get("/cart"),
   addItem: (productId, quantity, variant) =>
     api.post("/cart", { productId, quantity, variant }),
+  updateItem: (itemId, quantity) => api.put(`/cart/${itemId}`, { quantity }),
   removeItem: (itemId) => api.delete(`/cart/${itemId}`),
   clear: () => api.delete("/cart"),
 };
@@ -113,6 +117,12 @@ export const shopsAPI = {
 export const analyticsAPI = {
   getAdmin: () => api.get("/analytics/admin"),
   getVendor: () => api.get("/analytics/vendor"),
+};
+
+// Stripe API
+export const stripeAPI = {
+  createCheckoutSession: (data) => api.post("/stripe/create-checkout-session", data),
+  verifyPayment: (sessionId) => api.post("/stripe/verify-payment", { sessionId }),
 };
 
 export default api;

@@ -4,9 +4,10 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { productsAPI } from '../utils/api';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 import ProductCard from '../components/ProductCard';
 import Footer from '../components/Footer';
 import { gsap } from 'gsap';
@@ -20,6 +21,7 @@ const ProductsPage = () => {
     const [error, setError] = useState(null);
     const [searchParams, setSearchParams] = useSearchParams();
     const { showToast } = useToast();
+    const { isAuthenticated } = useAuth();
 
     const [search, setSearch] = useState(searchParams.get('search') || '');
     const [category, setCategory] = useState(searchParams.get('category') || '');
@@ -260,25 +262,60 @@ const ProductsPage = () => {
                         </form>
 
                         {/* Sort Dropdown */}
-                        <select
-                            value={sort}
-                            onChange={handleSortChange}
-                            style={{
-                                padding: '0.81rem 0.9rem',
-                                border: '1px solid var(--border)',
-                                background: '#1a1a1a',
-                                color: '#ffffff',
-                                fontSize: '0.81rem',
-                                cursor: 'pointer',
-                                minWidth: '162px',
-                            }}
-                        >
-                            <option value="-createdAt" style={{ background: '#1a1a1a', color: '#fff' }}>Newest First</option>
-                            <option value="createdAt" style={{ background: '#1a1a1a', color: '#fff' }}>Oldest First</option>
-                            <option value="price" style={{ background: '#1a1a1a', color: '#fff' }}>Price: Low to High</option>
-                            <option value="-price" style={{ background: '#1a1a1a', color: '#fff' }}>Price: High to Low</option>
-                            <option value="-averageRating" style={{ background: '#1a1a1a', color: '#fff' }}>Top Rated</option>
-                        </select>
+                        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                            {/* Wishlist Button */}
+                            {isAuthenticated && (
+                                <Link
+                                    to="/wishlist"
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        padding: '0.81rem 1.2rem',
+                                        background: 'transparent',
+                                        border: '1px solid var(--border)',
+                                        color: 'var(--fg)',
+                                        fontSize: '0.81rem',
+                                        textDecoration: 'none',
+                                        fontWeight: 600,
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.05em',
+                                        transition: 'all 0.2s ease',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.target.style.background = 'var(--fg)';
+                                        e.target.style.color = 'var(--bg)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.target.style.background = 'transparent';
+                                        e.target.style.color = 'var(--fg)';
+                                    }}
+                                >
+                                    My Wishlist
+                                </Link>
+                            )}
+                            
+                            <select
+                                value={sort}
+                                onChange={handleSortChange}
+                                style={{
+                                    padding: '0.81rem 0.9rem',
+                                    border: '1px solid var(--border)',
+                                    background: '#1a1a1a',
+                                    color: '#ffffff',
+                                    fontSize: '0.81rem',
+                                    cursor: 'pointer',
+                                    minWidth: '162px',
+                                }}
+                            >
+                                <option value="-createdAt" style={{ background: '#1a1a1a', color: '#fff' }}>Newest First</option>
+                                <option value="createdAt" style={{ background: '#1a1a1a', color: '#fff' }}>Oldest First</option>
+                                <option value="price" style={{ background: '#1a1a1a', color: '#fff' }}>Price: Low to High</option>
+                                <option value="-price" style={{ background: '#1a1a1a', color: '#fff' }}>Price: High to Low</option>
+                                <option value="-averageRating" style={{ background: '#1a1a1a', color: '#fff' }}>Top Rated</option>
+                            </select>
+                        </div>
                     </div>
 
                     {/* Category Pills */}

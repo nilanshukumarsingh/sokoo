@@ -1,4 +1,4 @@
-/**
+    /**
  * Cart Page
  * Shopping cart with quantity controls and checkout CTA
  */
@@ -24,15 +24,15 @@ const CartPage = () => {
         fetchCart();
     }, [isAuthenticated]);
 
-    const fetchCart = async () => {
-        setLoading(true);
+    const fetchCart = async (showLoading = true) => {
+        if (showLoading) setLoading(true);
         try {
             const response = await cartAPI.get();
             setCart(response.data.data);
         } catch (err) {
             console.error('Failed to fetch cart:', err);
         } finally {
-            setLoading(false);
+            if (showLoading) setLoading(false);
         }
     };
 
@@ -40,7 +40,8 @@ const CartPage = () => {
         setUpdating(true);
         try {
             await cartAPI.removeItem(itemId);
-            await fetchCart();
+            await fetchCart(false);
+            window.dispatchEvent(new Event('cart-updated')); // Notify Navigation
         } catch (err) {
             console.error('Failed to remove item:', err);
         } finally {
@@ -52,9 +53,24 @@ const CartPage = () => {
         setUpdating(true);
         try {
             await cartAPI.clear();
-            await fetchCart();
+            await fetchCart(false);
+            window.dispatchEvent(new Event('cart-updated')); // Notify Navigation
         } catch (err) {
             console.error('Failed to clear cart:', err);
+        } finally {
+            setUpdating(false);
+        }
+    };
+
+    const handleUpdateQuantity = async (itemId, newQty) => {
+        if (newQty < 1) return;
+        setUpdating(true);
+        try {
+            await cartAPI.updateItem(itemId, newQty);
+            await fetchCart(false);
+            window.dispatchEvent(new Event('cart-updated'));
+        } catch (err) {
+            console.error('Failed to update quantity:', err);
         } finally {
             setUpdating(false);
         }
@@ -228,13 +244,72 @@ const CartPage = () => {
                                                 </p>
                                             )}
 
-                                            <p style={{
-                                                fontSize: '1rem',
-                                                fontWeight: 600,
+                                            <div style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '1rem',
                                                 marginBottom: '1rem',
                                             }}>
-                                                ${(item.product?.price || item.price || 0).toFixed(2)} × {item.quantity}
-                                            </p>
+                                                <div style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    border: '1px solid var(--border)',
+                                                    borderRadius: '4px',
+                                                }}>
+                                                    <button
+                                                        onClick={() => handleUpdateQuantity(item._id, item.quantity - 1)}
+                                                        disabled={updating || item.quantity <= 1}
+                                                        style={{
+                                                            width: '32px',
+                                                            height: '32px',
+                                                            background: 'transparent',
+                                                            border: 'none',
+                                                            color: 'var(--fg)',
+                                                            cursor: 'pointer',
+                                                            fontSize: '1.2rem',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            opacity: item.quantity <= 1 ? 0.3 : 1,
+                                                        }}
+                                                    >
+                                                        -
+                                                    </button>
+                                                    <span style={{
+                                                        width: '40px',
+                                                        textAlign: 'center',
+                                                        fontWeight: 600,
+                                                        fontSize: '0.9rem',
+                                                    }}>
+                                                        {item.quantity}
+                                                    </span>
+                                                    <button
+                                                        onClick={() => handleUpdateQuantity(item._id, item.quantity + 1)}
+                                                        disabled={updating}
+                                                        style={{
+                                                            width: '32px',
+                                                            height: '32px',
+                                                            background: 'transparent',
+                                                            border: 'none',
+                                                            color: 'var(--fg)',
+                                                            cursor: 'pointer',
+                                                            fontSize: '1.1rem',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                        }}
+                                                    >
+                                                        +
+                                                    </button>
+                                                </div>
+                                                <span style={{
+                                                    fontSize: '1rem',
+                                                    fontWeight: 600,
+                                                    color: 'var(--muted)',
+                                                }}>
+                                                    × ${(item.product?.price || item.price || 0).toFixed(2)}
+                                                </span>
+                                            </div>
 
                                             <button
                                                 onClick={() => handleRemoveItem(item._id)}

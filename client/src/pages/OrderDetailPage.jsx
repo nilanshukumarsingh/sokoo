@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ordersAPI } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { Package, MapPin, Clock, ArrowLeft, AlertTriangle, HelpCircle } from 'lucide-react';
+import { Package, MapPin, Clock, ArrowLeft, AlertTriangle, HelpCircle, CreditCard } from 'lucide-react';
 import Footer from '../components/Footer';
 import ConfirmationModal from '../components/ConfirmationModal';
 
@@ -286,6 +286,48 @@ const OrderDetailPage = () => {
                                             </p>
                                         )}
                                     </div>
+                                    
+                                    {/* Payment Info */}
+                                    <div style={{ marginTop: '2rem' }}>
+                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: 'var(--muted)' }}>
+                                            <CreditCard size={18} />
+                                            <span style={{ textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.85rem', fontWeight: 600 }}>Payment Info</span>
+                                        </div>
+                                        <div>
+                                            <p style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+                                                <span style={{ color: 'var(--muted)' }}>Method: </span>
+                                                <span style={{ fontWeight: 600 }}>{order.paymentMethod || 'Not specified'}</span>
+                                            </p>
+                                            <p style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+                                                <span style={{ color: 'var(--muted)' }}>Status: </span>
+                                                <span style={{ 
+                                                    fontWeight: 600, 
+                                                    color: order.isPaid ? '#10b981' : '#f59e0b' 
+                                                }}>
+                                                    {order.isPaid ? 'Paid' : 'Pending'}
+                                                </span>
+                                            </p>
+                                            {order.paymentResult && order.paymentResult.receipt_url && (
+                                                <a 
+                                                    href={order.paymentResult.receipt_url} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    style={{
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: '4px',
+                                                        marginTop: '0.5rem',
+                                                        fontSize: '0.85rem',
+                                                        color: '#635bff',
+                                                        textDecoration: 'none',
+                                                        fontWeight: 600
+                                                    }}
+                                                >
+                                                    View Official Receipt &rarr;
+                                                </a>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {/* Help & Info */}
@@ -302,9 +344,27 @@ const OrderDetailPage = () => {
                                             </p>
                                         </div>
                                         <div>
+                                            <p style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.2rem' }}>How do I track my package?</p>
+                                            <p style={{ fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.4 }}>
+                                                Once your order is shipped, you will receive an email with a tracking number and a link to track your delivery in real-time.
+                                            </p>
+                                        </div>
+                                        <div>
                                             <p style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.2rem' }}>When will I receive my refund?</p>
                                             <p style={{ fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.4 }}>
                                                 For cancelled orders, refunds are processed within 3-5 business days to your original payment method.
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.2rem' }}>Return Policy</p>
+                                            <p style={{ fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.4 }}>
+                                                Items can be returned within 30 days of delivery. Ensure the product is unused and in original packaging.
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.2rem' }}>Customer Support</p>
+                                            <p style={{ fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.4 }}>
+                                                Available Mon-Fri, 9am - 6pm EST. We typically respond to inquiries within 24 hours.
                                             </p>
                                         </div>
                                         <div style={{ paddingTop: '0.5rem' }}>

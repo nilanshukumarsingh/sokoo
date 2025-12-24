@@ -86,3 +86,35 @@ exports.clearCart = asyncHandler(async (req, res, next) => {
 
     res.status(200).json({ success: true, data: {} });
 });
+
+// @desc    Update cart item quantity
+// @route   PUT /api/cart/:itemId
+// @access  Private
+exports.updateCartItemQty = asyncHandler(async (req, res, next) => {
+    const { quantity } = req.body;
+    
+    let cart = await Cart.findOne({ user: req.user.id });
+
+    if (!cart) {
+        return next(new ErrorResponse('Cart not found', 404));
+    }
+
+    const itemIndex = cart.items.findIndex(item => item._id.toString() === req.params.itemId);
+
+    if (itemIndex === -1) {
+        return next(new ErrorResponse('Item not found in cart', 404));
+    }
+
+    if (quantity > 0) {
+        cart.items[itemIndex].quantity = quantity;
+    } else {
+        // Optional: remove if quantity is 0, but usually handled by remove endpoint
+        // For now, let's just set to 1 if they try to go below 1, or remove
+        // Let's enforce min 1 here for update, remove should be explicit
+        cart.items[itemIndex].quantity = 1; 
+    }
+
+    await cart.save();
+
+    res.status(200).json({ success: true, data: cart });
+});

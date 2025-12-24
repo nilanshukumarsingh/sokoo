@@ -41,6 +41,25 @@ const OrderSchema = new mongoose.Schema({
         enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
         default: 'pending',
     },
+    paymentMethod: {
+        type: String,
+        required: true,
+        default: 'Not specified'
+    },
+    isPaid: {
+        type: Boolean,
+        default: false,
+    },
+    paidAt: {
+        type: Date,
+    },
+    paymentResult: {
+        id: { type: String },
+        status: { type: String },
+        update_time: { type: String },
+        email_address: { type: String },
+        receipt_url: { type: String }
+    },
     createdAt: {
         type: Date,
         default: Date.now,

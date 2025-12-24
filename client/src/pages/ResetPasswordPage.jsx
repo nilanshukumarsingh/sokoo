@@ -1,63 +1,65 @@
 /**
- * Login Page
- * Premium, minimalist design matching the site aesthetic
+ * Reset Password Page
+ * Allows users to set a new password using the token from email
  */
 
 import { useState, useRef, useLayoutEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { gsap } from 'gsap';
-import { useAuth } from '../context/AuthContext';
+import { authAPI } from '../utils/api';
 import Footer from '../components/Footer';
 
-const LoginPage = () => {
-    const [email, setEmail] = useState('');
+const ResetPasswordPage = () => {
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
-
-    const { login } = useAuth();
-    const navigate = useNavigate();
-    const location = useLocation();
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [status, setStatus] = useState('idle'); // idle, loading, success, error
+    const [message, setMessage] = useState('');
+    
+    const { resetToken } = useParams();
     const containerRef = useRef(null);
+    const navigate = useNavigate();
 
+    // Entry animation
     useLayoutEffect(() => {
-        const from = location.state?.from;
         const ctx = gsap.context(() => {
-            if (from === 'register') {
-                gsap.fromTo(containerRef.current,
-                    { x: -50, opacity: 0 },
-                    { x: 0, opacity: 1, duration: 0.5, ease: "power3.out" }
-                );
-            } else {
-                gsap.fromTo(containerRef.current,
-                    { y: 20, opacity: 0 },
-                    { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }
-                );
-            }
+            gsap.fromTo(containerRef.current,
+                { y: 20, opacity: 0 },
+                { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }
+            );
         }, containerRef);
         return () => ctx.revert();
-    }, [location.state]);
-
-    const from = location.state?.from?.pathname || '/';
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
-        setLoading(true);
+        
+        if (password !== confirmPassword) {
+            setStatus('error');
+            setMessage('Passwords do not match');
+            return;
+        }
+
+        if (password.length < 6) {
+            setStatus('error');
+            setMessage('Password must be at least 6 characters');
+            return;
+        }
+
+        setStatus('loading');
+        setMessage('');
 
         try {
-            const user = await login(email, password);
-
-            // Redirect based on role
-            if (user.role === 'vendor') {
-                navigate('/vendor/dashboard');
-            } else {
-                navigate(from, { replace: true });
-            }
+            await authAPI.resetPassword(resetToken, password);
+            setStatus('success');
+            setMessage('Password reset successful! Redirecting to login...');
+            
+            // Redirect after delay
+            setTimeout(() => {
+                navigate('/login');
+            }, 2000);
         } catch (err) {
-            setError(err.response?.data?.error || 'Login failed. Please try again.');
-        } finally {
-            setLoading(false);
+            setStatus('error');
+            setMessage(err.response?.data?.error || 'Failed to reset password. Token may be invalid or expired.');
         }
     };
 
@@ -81,32 +83,47 @@ const LoginPage = () => {
                 }}>
                     {/* Header */}
                     <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
-                        <h1 style={{
+                         <h1 style={{
                             fontFamily: 'var(--font-display)',
-                            fontSize: 'clamp(2rem, 4vw, 3rem)',
+                            fontSize: 'clamp(1.8rem, 4vw, 2.5rem)',
                             fontWeight: 700,
                             letterSpacing: '-0.04em',
                             marginBottom: '0.5rem',
                             color: 'var(--fg)'
                         }}>
-                            Welcome <span style={{ fontStyle: 'italic', fontFamily: 'var(--font-serif)' }}>back</span>
+                            Reset <span style={{ fontStyle: 'italic', fontFamily: 'var(--font-serif)' }}>Password</span>
                         </h1>
                         <p style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>
-                            Sign in to continue to your account
+                            Create a new password for your account
                         </p>
                     </div>
 
-                    {/* Error Message */}
-                    {error && (
+                    {/* Status Messages */}
+                    {status === 'success' && (
+                        <div style={{
+                            padding: '1rem',
+                            marginBottom: '1.5rem',
+                            background: 'rgba(16, 185, 129, 0.1)',
+                            border: '1px solid rgba(16, 185, 129, 0.3)',
+                            color: '#10b981',
+                            fontSize: '0.9rem',
+                            borderRadius: '4px'
+                        }}>
+                            {message}
+                        </div>
+                    )}
+                    
+                    {status === 'error' && (
                         <div style={{
                             padding: '1rem',
                             marginBottom: '1.5rem',
                             background: 'rgba(220, 38, 38, 0.1)',
                             border: '1px solid rgba(220, 38, 38, 0.3)',
                             color: '#dc2626',
-                            fontSize: '0.9rem'
+                            fontSize: '0.9rem',
+                            borderRadius: '4px'
                         }}>
-                            {error}
+                            {message}
                         </div>
                     )}
 
@@ -122,40 +139,7 @@ const LoginPage = () => {
                                 letterSpacing: '0.1em',
                                 color: 'var(--muted)'
                             }}>
-                                Email
-                            </label>
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                                style={{
-                                    width: '100%',
-                                    padding: '0.75rem',
-                                    fontSize: '0.95rem',
-                                    border: '1px solid var(--border)',
-                                    background: 'transparent',
-                                    color: 'var(--fg)',
-                                    outline: 'none',
-                                    transition: 'border-color 0.3s'
-                                }}
-                                onFocus={(e) => e.target.style.borderColor = 'var(--fg)'}
-                                onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
-                                placeholder="you@example.com"
-                            />
-                        </div>
-
-                        <div style={{ marginBottom: '1.25rem' }}>
-                            <label style={{
-                                display: 'block',
-                                marginBottom: '0.4rem',
-                                fontSize: '0.75rem',
-                                fontWeight: 600,
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.1em',
-                                color: 'var(--muted)'
-                            }}>
-                                Password
+                                New Password
                             </label>
                             <input
                                 type="password"
@@ -174,24 +158,46 @@ const LoginPage = () => {
                                 }}
                                 onFocus={(e) => e.target.style.borderColor = 'var(--fg)'}
                                 onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
-                                placeholder="••••••••"
+                                placeholder="Min 6 chars"
                             />
                         </div>
 
-                        <div style={{ textAlign: 'right', marginBottom: '1.25rem' }}>
-                            <Link to="/forgot-password" style={{
-                                fontSize: '0.8rem',
-                                color: 'var(--muted)',
-                                textDecoration: 'none',
-                                fontWeight: 500
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <label style={{
+                                display: 'block',
+                                marginBottom: '0.4rem',
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.1em',
+                                color: 'var(--muted)'
                             }}>
-                                Forgot Password?
-                            </Link>
+                                Confirm Password
+                            </label>
+                            <input
+                                type="password"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                required
+                                style={{
+                                    width: '100%',
+                                    padding: '0.75rem',
+                                    fontSize: '0.95rem',
+                                    border: '1px solid var(--border)',
+                                    background: 'transparent',
+                                    color: 'var(--fg)',
+                                    outline: 'none',
+                                    transition: 'border-color 0.3s'
+                                }}
+                                onFocus={(e) => e.target.style.borderColor = 'var(--fg)'}
+                                onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
+                                placeholder="Confirm new password"
+                            />
                         </div>
 
                         <button
                             type="submit"
-                            disabled={loading}
+                            disabled={status === 'loading' || status === 'success'}
                             style={{
                                 width: '100%',
                                 padding: '0.85rem',
@@ -202,34 +208,16 @@ const LoginPage = () => {
                                 background: 'var(--fg)',
                                 color: 'var(--bg)',
                                 border: 'none',
-                                cursor: loading ? 'not-allowed' : 'pointer',
-                                opacity: loading ? 0.7 : 1,
+                                cursor: (status === 'loading' || status === 'success') ? 'not-allowed' : 'pointer',
+                                opacity: (status === 'loading' || status === 'success') ? 0.7 : 1,
                                 transition: 'opacity 0.3s, transform 0.3s'
                             }}
-                            onMouseEnter={(e) => !loading && (e.target.style.transform = 'translateY(-2px)')}
+                            onMouseEnter={(e) => (status !== 'loading' && status !== 'success') && (e.target.style.transform = 'translateY(-2px)')}
                             onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
                         >
-                            {loading ? 'Signing in...' : 'Sign In'}
+                            {status === 'loading' ? 'Resetting...' : 'Reset Password'}
                         </button>
                     </form>
-
-                    {/* Register Link */}
-                    <p style={{
-                        marginTop: '1.25rem',
-                        textAlign: 'center',
-                        color: 'var(--muted)',
-                        fontSize: '0.85rem'
-                    }}>
-                        Don't have an account?{' '}
-                        <Link to="/register" style={{
-                            color: 'var(--fg)',
-                            textDecoration: 'none',
-                            fontWeight: 600,
-                            borderBottom: '1px solid var(--fg)'
-                        }} state={{ from: 'login' }}>
-                            Create one
-                        </Link>
-                    </p>
                 </div>
             </div>
             <Footer />
@@ -237,4 +225,4 @@ const LoginPage = () => {
     );
 };
 
-export default LoginPage;
+export default ResetPasswordPage;
