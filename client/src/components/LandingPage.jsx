@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import StripeGradientBackground from "./StripeGradientBackground";
+import HeroBackgroundV3 from "./HeroBackgroundV3";
 import Footer from "./Footer";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -285,6 +286,10 @@ const LandingPage = ({ isPreloaderFinished }) => {
         blur={true}
       />
 
+
+
+
+
       {/* ================= HERO SECTION ================= */}
       <section style={{
         height: "100vh",
@@ -294,6 +299,8 @@ const LandingPage = ({ isPreloaderFinished }) => {
         padding: "0 var(--space-lg)",
         position: "relative"
       }}>
+        {/* HERO PRODUCT IMAGES - Radial Burst Layout */}
+        <HeroBackgroundV3 trigger={isPreloaderFinished} />
         {/* Top Spacer to push text to center */}
         <div style={{ flex: 1 }} />
 
@@ -345,7 +352,9 @@ const LandingPage = ({ isPreloaderFinished }) => {
           flexDirection: "column",
           justifyContent: "flex-start",
           alignItems: "center",
-          visibility: isPreloaderFinished ? 'visible' : 'hidden'
+          visibility: isPreloaderFinished ? 'visible' : 'hidden',
+          position: "relative",
+          zIndex: 20
         }}>
           <div ref={el => heroTextRef.current[3] = el} style={{
             marginTop: "3rem",
@@ -385,19 +394,21 @@ const LandingPage = ({ isPreloaderFinished }) => {
           marginBottom: "2rem",
           willChange: "transform"
         }}>
-          {[...Array(8)].map((_, i) => (
-            <span key={i} style={{
-              fontSize: "clamp(6rem, 18vw, 20rem)",
-              fontFamily: "var(--font-display)",
-              fontWeight: 800,
-              lineHeight: 0.8,
-              color: i % 2 === 0 ? "var(--fg)" : "transparent",
-              WebkitTextStroke: i % 2 === 0 ? "none" : "1px var(--fg)", // Outline effect
-              opacity: 0.9
-            }}>
-              SCALE
-            </span>
-          ))}
+          {
+            [...Array(8)].map((_, i) => (
+              <span key={i} style={{
+                fontSize: "clamp(6rem, 18vw, 20rem)",
+                fontFamily: "var(--font-display)",
+                fontWeight: 800,
+                lineHeight: 0.8,
+                color: i % 2 === 0 ? "var(--fg)" : "transparent",
+                WebkitTextStroke: i % 2 === 0 ? "none" : "1px var(--fg)", // Outline effect
+                opacity: 0.9
+              }}>
+                SCALE
+              </span>
+            ))
+          }
         </div>
 
         {/* ROW 2: THRIVE */}
@@ -407,20 +418,22 @@ const LandingPage = ({ isPreloaderFinished }) => {
           gap: "4rem",
           willChange: "transform"
         }}>
-          {[...Array(8)].map((_, i) => (
-            <span key={i} style={{
-              fontSize: "clamp(6rem, 18vw, 20rem)",
-              fontFamily: "var(--font-display)",
-              fontWeight: 800,
-              fontStyle: "italic",
-              lineHeight: 0.8,
-              color: i % 2 !== 0 ? "var(--fg)" : "transparent",
-              WebkitTextStroke: i % 2 !== 0 ? "none" : "1px var(--fg)",
-              opacity: 0.9
-            }}>
-              THRIVE
-            </span>
-          ))}
+          {
+            [...Array(8)].map((_, i) => (
+              <span key={i} style={{
+                fontSize: "clamp(6rem, 18vw, 20rem)",
+                fontFamily: "var(--font-display)",
+                fontWeight: 800,
+                fontStyle: "italic",
+                lineHeight: 0.8,
+                color: i % 2 !== 0 ? "var(--fg)" : "transparent",
+                WebkitTextStroke: i % 2 !== 0 ? "none" : "1px var(--fg)",
+                opacity: 0.9
+              }}>
+                THRIVE
+              </span>
+            ))
+          }
         </div>
 
         {/* Overlay Label - Clean Text */}
@@ -985,7 +998,7 @@ const LandingPage = ({ isPreloaderFinished }) => {
 
       `}</style>
 
-    </div >
+    </div>
   );
 };
 
