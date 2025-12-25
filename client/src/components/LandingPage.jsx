@@ -9,7 +9,9 @@ import { Link } from "react-router-dom";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import StripeGradientBackground from "./StripeGradientBackground";
+import HeroBackgroundV3 from "./HeroBackgroundV3";
 import Footer from "./Footer";
+import { Instagram, Twitter, Linkedin, Github } from "lucide-react";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -19,6 +21,7 @@ const LandingPage = ({ isPreloaderFinished }) => {
   const scaleThriveRef = useRef(null);
   const joinSectionRef = useRef(null);
   const statsRef = useRef([]);
+  const [isGlowEnabled, setIsGlowEnabled] = useState(false); // Toggle for glow effect
   const iconRefs = useRef([]); // Refs for Bento SVGs
 
   // Master GSAP Context
@@ -285,6 +288,10 @@ const LandingPage = ({ isPreloaderFinished }) => {
         blur={true}
       />
 
+
+
+
+
       {/* ================= HERO SECTION ================= */}
       <section style={{
         height: "100vh",
@@ -294,6 +301,8 @@ const LandingPage = ({ isPreloaderFinished }) => {
         padding: "0 var(--space-lg)",
         position: "relative"
       }}>
+        {/* HERO PRODUCT IMAGES - Radial Burst Layout */}
+        <HeroBackgroundV3 trigger={isPreloaderFinished} />
         {/* Top Spacer to push text to center */}
         <div style={{ flex: 1 }} />
 
@@ -345,7 +354,9 @@ const LandingPage = ({ isPreloaderFinished }) => {
           flexDirection: "column",
           justifyContent: "flex-start",
           alignItems: "center",
-          visibility: isPreloaderFinished ? 'visible' : 'hidden'
+          visibility: isPreloaderFinished ? 'visible' : 'hidden',
+          position: "relative",
+          zIndex: 20
         }}>
           <div ref={el => heroTextRef.current[3] = el} style={{
             marginTop: "3rem",
@@ -385,19 +396,21 @@ const LandingPage = ({ isPreloaderFinished }) => {
           marginBottom: "2rem",
           willChange: "transform"
         }}>
-          {[...Array(8)].map((_, i) => (
-            <span key={i} style={{
-              fontSize: "clamp(6rem, 18vw, 20rem)",
-              fontFamily: "var(--font-display)",
-              fontWeight: 800,
-              lineHeight: 0.8,
-              color: i % 2 === 0 ? "var(--fg)" : "transparent",
-              WebkitTextStroke: i % 2 === 0 ? "none" : "1px var(--fg)", // Outline effect
-              opacity: 0.9
-            }}>
-              SCALE
-            </span>
-          ))}
+          {
+            [...Array(8)].map((_, i) => (
+              <span key={i} style={{
+                fontSize: "clamp(6rem, 18vw, 20rem)",
+                fontFamily: "var(--font-display)",
+                fontWeight: 800,
+                lineHeight: 0.8,
+                color: i % 2 === 0 ? "var(--fg)" : "transparent",
+                WebkitTextStroke: i % 2 === 0 ? "none" : "1px var(--fg)", // Outline effect
+                opacity: 0.9
+              }}>
+                SCALE
+              </span>
+            ))
+          }
         </div>
 
         {/* ROW 2: THRIVE */}
@@ -407,20 +420,22 @@ const LandingPage = ({ isPreloaderFinished }) => {
           gap: "4rem",
           willChange: "transform"
         }}>
-          {[...Array(8)].map((_, i) => (
-            <span key={i} style={{
-              fontSize: "clamp(6rem, 18vw, 20rem)",
-              fontFamily: "var(--font-display)",
-              fontWeight: 800,
-              fontStyle: "italic",
-              lineHeight: 0.8,
-              color: i % 2 !== 0 ? "var(--fg)" : "transparent",
-              WebkitTextStroke: i % 2 !== 0 ? "none" : "1px var(--fg)",
-              opacity: 0.9
-            }}>
-              THRIVE
-            </span>
-          ))}
+          {
+            [...Array(8)].map((_, i) => (
+              <span key={i} style={{
+                fontSize: "clamp(6rem, 18vw, 20rem)",
+                fontFamily: "var(--font-display)",
+                fontWeight: 800,
+                fontStyle: "italic",
+                lineHeight: 0.8,
+                color: i % 2 !== 0 ? "var(--fg)" : "transparent",
+                WebkitTextStroke: i % 2 !== 0 ? "none" : "1px var(--fg)",
+                opacity: 0.9
+              }}>
+                THRIVE
+              </span>
+            ))
+          }
         </div>
 
         {/* Overlay Label - Clean Text */}
@@ -878,31 +893,71 @@ const LandingPage = ({ isPreloaderFinished }) => {
       }}>
         <div style={{ maxWidth: "1260px", margin: "0 auto" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "4rem" }}>
-            {['Instagram', 'Twitter', 'LinkedIn', 'Github'].map((text, i) => (
-              <div key={text} className="footer-link-wrapper" style={{ overflow: "hidden", lineHeight: 0.85 }}>
+            {[
+              { name: 'Instagram', icon: Instagram, color: '#FF306E' },
+              { name: 'Twitter', icon: Twitter, color: '#1DA1F2' },
+              { name: 'LinkedIn', icon: Linkedin, color: '#0A66C2' },
+              { name: 'Github', icon: Github, color: '#FFFFFF' }
+            ].map((social, i) => (
+              <div key={social.name} className="footer-link-wrapper" style={{ lineHeight: 0.85, position: "relative" }}>
                 <a href="#" className="footer-huge-link" style={{
-                  display: "block",
+                  display: "flex",
+                  alignItems: "center",
                   fontSize: "clamp(4rem, 10.8vw, 10rem)",
                   fontFamily: "var(--font-display)",
                   fontWeight: 700,
                   color: "#fff",
                   textDecoration: "none",
                   textTransform: "uppercase",
-                  transition: "color 0.3s ease, transform 0.3s ease",
-                  transformOrigin: "left center"
+                  transition: "all 0.4s cubic-bezier(0.23, 1, 0.32, 1)",
+                  transformOrigin: "left center",
+                  position: "relative",
+                  WebkitTextStroke: "0px transparent"
                 }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.color = "transparent";
-                    e.currentTarget.style.WebkitTextStroke = "1px var(--muted)";
-                    e.currentTarget.style.transform = "translateX(20px)";
+                    const icon = e.currentTarget.querySelector('.social-hover-icon');
+
+                    if (isGlowEnabled) {
+                      e.currentTarget.style.color = "transparent";
+                      e.currentTarget.style.WebkitTextStroke = `1px ${social.color}`;
+                      e.currentTarget.style.textShadow = `0 0 25px ${social.color}40`;
+                    } else {
+                      // Default interactive state: Outline only (no glow)
+                      e.currentTarget.style.color = "transparent";
+                      e.currentTarget.style.textShadow = "none";
+                      e.currentTarget.style.WebkitTextStroke = "1px #fff";
+                    }
+
+                    e.currentTarget.style.transform = "translateX(40px)";
+
+                    if (icon) {
+                      gsap.to(icon, { opacity: 1, x: -20, duration: 0.4, ease: "power2.out" });
+                    }
                   }}
                   onMouseLeave={(e) => {
+                    const icon = e.currentTarget.querySelector('.social-hover-icon');
                     e.currentTarget.style.color = "#fff";
-                    e.currentTarget.style.WebkitTextStroke = "none";
+                    e.currentTarget.style.WebkitTextStroke = "0px transparent";
                     e.currentTarget.style.transform = "translateX(0)";
+                    e.currentTarget.style.textShadow = "none";
+                    if (icon) {
+                      gsap.to(icon, { opacity: 0, x: -40, duration: 0.4, ease: "power2.in" });
+                    }
                   }}
                 >
-                  {text}
+                  <social.icon
+                    className="social-hover-icon"
+                    style={{
+                      position: "absolute",
+                      left: "-60px",
+                      width: "clamp(2rem, 6vw, 5rem)",
+                      height: "clamp(2rem, 6vw, 5rem)",
+                      color: social.color,
+                      opacity: 0,
+                      pointerEvents: "none"
+                    }}
+                  />
+                  {social.name}
                 </a>
               </div>
             ))}
@@ -910,7 +965,12 @@ const LandingPage = ({ isPreloaderFinished }) => {
         </div>
       </section>
 
-      <Footer />
+
+
+      <Footer
+        isGlowEnabled={isGlowEnabled}
+        onToggleGlow={() => setIsGlowEnabled(prev => !prev)}
+      />
       {/* Scoped Styles for Hero Buttons */}
       <style>{`
         .hero-btn {

@@ -10,7 +10,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const Footer = () => {
+const Footer = ({ isGlowEnabled, onToggleGlow }) => {
     const footerRef = useRef(null);
     const sunriseRef = useRef(null);
     const sunriseTextRef = useRef(null);
@@ -79,12 +79,19 @@ const Footer = () => {
                             }}>
                                 SOKO
                             </h2>
-                            <p style={{
-                                opacity: 0.4,
-                                marginTop: '0.4rem',
-                                fontSize: '0.81rem',
-                                color: '#fff',
-                            }}>
+                            <p
+                                onClick={onToggleGlow}
+                                style={{
+                                    opacity: isGlowEnabled ? 0.8 : 0.4,
+                                    marginTop: '0.4rem',
+                                    fontSize: '0.81rem',
+                                    color: '#fff',
+                                    cursor: 'pointer',
+                                    transition: 'opacity 0.3s',
+                                    userSelect: 'none'
+                                }}
+                                title="Toggle UI Effects"
+                            >
                                 © 2025 All Rights Reserved.
                             </p>
                         </div>
