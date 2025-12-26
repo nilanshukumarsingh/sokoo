@@ -19,7 +19,11 @@
 
 ## 📸 Screenshots
 
-> _Add your screenshots here_
+![Vendor Dashboard](./client/src/assets/screenshots/Home.png)
+
+![Products](./client/src/assets/screenshots/Products.jpeg)
+
+![Product Detail Page](./client/src/assets/screenshots/product-detail.png)
 
 ---
 
@@ -263,7 +267,7 @@ We love contributions! Here's how you can help:
 3. **Add upstream remote**
 
    ```bash
-   git remote add upstream https://github.com/jhaanurag/sokoo.git
+   git remote add upstream https://github.com/nilanshukumarsingh/sokoo.git
    ```
 
 4. **Create a feature branch**
@@ -312,7 +316,7 @@ We love contributions! Here's how you can help:
 
 ### 🐛 Reporting Issues
 
-Found a bug? Please [open an issue](https://github.com/jhaanurag/sokoo/issues/new) with:
+Found a bug? Please [open an issue](https://github.com/nilanshukumarsingh/sokoo/issues/new) with:
 
 - Clear description
 - Steps to reproduce
@@ -341,6 +345,6 @@ This project is licensed under the **ISC License** - see the [LICENSE](LICENSE) 
 
 **⭐ Star this repo if you find it helpful!**
 
-Made with ❤️ by [Anurag Jha](https://github.com/jhaanurag)
+Made with ❤️ by [Nilanshu Kumar Singh](https://github.com/nilanshukumarsingh)
 
 </div>
