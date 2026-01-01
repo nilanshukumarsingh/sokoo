@@ -235,7 +235,6 @@ npm run dev
 | :--------------------------------------------------------------------------------------------------------------------------: |
 |                                                        **Anurag Jha**                                                        |
 | [![GitHub](https://img.shields.io/badge/GitHub-100000?style=flat&logo=github&logoColor=white)](https://github.com/jhaanurag) |
-|                                                       _Lead Developer_                                                       |
 
 </div>
 
