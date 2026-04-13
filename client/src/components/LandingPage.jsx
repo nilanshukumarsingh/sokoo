@@ -894,13 +894,13 @@ const LandingPage = ({ isPreloaderFinished }) => {
         <div style={{ maxWidth: "1260px", margin: "0 auto" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "4rem" }}>
             {[
-              { name: 'Instagram', icon: Instagram, color: '#FF306E' },
-              { name: 'Twitter', icon: Twitter, color: '#1DA1F2' },
-              { name: 'LinkedIn', icon: Linkedin, color: '#0A66C2' },
-              { name: 'Github', icon: Github, color: '#FFFFFF' }
+              { name: 'Instagram', icon: Instagram, color: '#FF306E', href: '' },
+              { name: 'Twitter', icon: Twitter, color: '#1DA1F2', href: 'https://x.com/nilanshukumar81' },
+              { name: 'LinkedIn', icon: Linkedin, color: '#0A66C2', href: 'https://www.linkedin.com/in/nilanshukumarsingh/' },
+              { name: 'Github', icon: Github, color: '#FFFFFF', href: 'https://github.com/nilanshukumarsingh/sokoo' }
             ].map((social, i) => (
               <div key={social.name} className="footer-link-wrapper" style={{ lineHeight: 0.85, position: "relative" }}>
-                <a href="#" className="footer-huge-link" style={{
+                <a href={social.href || undefined} className="footer-huge-link" style={{
                   display: "flex",
                   alignItems: "center",
                   fontSize: "clamp(4rem, 10.8vw, 10rem)",
@@ -914,6 +914,11 @@ const LandingPage = ({ isPreloaderFinished }) => {
                   position: "relative",
                   WebkitTextStroke: "0px transparent"
                 }}
+                  target={social.href ? "_blank" : undefined}
+                  rel={social.href ? "noopener noreferrer" : undefined}
+                  onClick={(e) => {
+                    if (!social.href) e.preventDefault();
+                  }}
                   onMouseEnter={(e) => {
                     const icon = e.currentTarget.querySelector('.social-hover-icon');
 
